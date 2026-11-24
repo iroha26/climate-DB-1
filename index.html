@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>世界気温取得状況マップ</title>
+
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="title">
+世界気温取得状況マップ
+</div>
+
+<div class="search-box">
+    <input
+        type="text"
+        id="citySearch"
+        placeholder="都市名・国名で検索（日本語/英語）">
+    <button onclick="searchCity()">検索</button>
+    <div id="suggestions"></div>
+</div>
+
+<div id="stats" class="stats">
+読み込み中...
+</div>
+
+<div class="legend">
+<div class="legend-item green">● 取得済</div>
+<div class="legend-item red">● 未取得</div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
