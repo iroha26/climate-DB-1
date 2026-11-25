@@ -44,7 +44,7 @@ body {
     font-size: 12px;
     line-height: 1.4;
 
-    width: 120px;
+    width: 140px;
 
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
@@ -69,6 +69,11 @@ body {
     margin: 5px 0;
 }
 
+.legend-note {
+    margin-top: 6px;
+    font-size: 11px;
+}
+
 .green {
     color: green;
 }
@@ -76,6 +81,11 @@ body {
 .red {
     color: red;
 }
+
+.gray {
+    color: #777;
+}
+
 .search-box {
     position: absolute;
     top: 10px;
@@ -112,6 +122,7 @@ body {
 .suggestion-item:hover {
     background: #f0f0f0;
 }
+
 /* ポップアップ */
 .maplibregl-popup-content {
     font-family: sans-serif;

@@ -44,12 +44,29 @@ function escapeHtml(s) {
 }
 
 function popupHtml(c) {
+    const lowerExceed = c.lowerExceedDays === undefined || c.lowerExceedDays === ""
+        ? "対象外"
+        : `${escapeHtml(c.lowerExceedDays)}日`;
+    const upperExceed = c.upperExceedDays === undefined || c.upperExceedDays === ""
+        ? "対象外"
+        : `${escapeHtml(c.upperExceedDays)}日`;
+    const note = c.status === "取得済"
+        ? `
+        <br>2025年最高気温: ${escapeHtml(c.maxTemp || "－")}℃
+        <br>2025年最低気温: ${escapeHtml(c.minTemp || "－")}℃
+        <br>JMA地点ID: ${escapeHtml(c.jmaStationId || "－")}
+        <br>有効日数: 日最高 ${escapeHtml(c.validMaxDays || "－")}/365日・日最低 ${escapeHtml(c.validMinDays || "－")}/365日
+        <br>下限超過: ${lowerExceed} / 上限超過: ${upperExceed}
+        <br>いずれか超過: ${escapeHtml(c.eitherExceedDays || "－")}日
+        <br>出典: ${escapeHtml(c.dataSource || "－")}`
+        : c.dataNote
+            ? `<br>${escapeHtml(c.dataNote)}`
+            : "";
+
     return `
         <b>${escapeHtml(c.city)}</b>（${escapeHtml(c.cityEn)}）<br>
         国: ${escapeHtml(c.country)}<br>
-        最高気温: ${escapeHtml(c.maxTemp || "－")}℃<br>
-        最低気温: ${escapeHtml(c.minTemp || "－")}℃<br>
-        状況: ${escapeHtml(c.status)}
+        状況: ${escapeHtml(c.status)}${note}
     `;
 }
 
@@ -80,6 +97,7 @@ map.on("load", async () => {
     const rows = await loadData();
 
     let completed = 0;
+    let excluded = 0;
 
     rows.forEach(row => {
         if (!row.latitude || !row.longitude) return;
@@ -93,6 +111,14 @@ map.on("load", async () => {
             maxTemp: row.max_temp,
             minTemp: row.min_temp,
             status: row["取得状況"],
+            jmaStationId: row.jma_station_id,
+            validMaxDays: row.valid_max_days,
+            validMinDays: row.valid_min_days,
+            lowerExceedDays: row.lower_exceed_days,
+            upperExceedDays: row.upper_exceed_days,
+            eitherExceedDays: row.either_exceed_days,
+            dataSource: row.data_source,
+            dataNote: row.data_note,
             lat: parseFloat(row.latitude),
             lng: parseFloat(row.longitude)
         };
@@ -102,6 +128,7 @@ map.on("load", async () => {
         );
 
         if (c.status === "取得済") completed++;
+        if (c.status === "地点選択要（除外）") excluded++;
         cities.push(c);
     });
 
@@ -109,9 +136,10 @@ map.on("load", async () => {
     const rate = total ? ((completed / total) * 100).toFixed(1) : "0.0";
 
     document.getElementById("stats").innerHTML = `
-総地点数: ${total}<br>
+対象地点: ${total}<br>
 取得済: ${completed}<br>
-未取得: ${total - completed}<br>
+未取得: ${total - completed - excluded}<br>
+対象外: ${excluded}<br>
 取得率: ${rate}%
 `;
 
@@ -127,24 +155,23 @@ map.on("load", async () => {
         }
     });
 
+    const statusColor = [
+        "case",
+        ["==", ["get", "status"], "取得済"], "green",
+        ["==", ["get", "status"], "地点選択要（除外）"], "#777",
+        "red"
+    ];
+
     map.addLayer({
         id: "cities",
         type: "circle",
         source: "cities",
         paint: {
             "circle-radius": 6,
-            "circle-color": [
-                "case",
-                ["==", ["get", "status"], "取得済"], "green",
-                "red"
-            ],
+            "circle-color": statusColor,
             "circle-opacity": 0.8,
             "circle-stroke-width": 2,
-            "circle-stroke-color": [
-                "case",
-                ["==", ["get", "status"], "取得済"], "green",
-                "red"
-            ]
+            "circle-stroke-color": statusColor
         }
     });
 
